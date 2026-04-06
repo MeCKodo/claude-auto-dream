@@ -1,0 +1,17 @@
+{
+  "name": "claude-auto-dream",
+  "description": "Automatic memory consolidation for Claude Code — replicates Anthropic's auto-dream feature with any LLM provider",
+  "owner": {
+    "name": "MeCKodo"
+  },
+  "plugins": [
+    {
+      "name": "claude-auto-dream",
+      "source": "./",
+      "description": "Automatically consolidates session learnings into memory files at the end of each Claude Code session. Supports Anthropic, OpenAI, DashScope, Ollama and any OpenAI-compatible API. Features throttle gates (24h + 5 sessions), tool permission sandboxing, and multi-provider configuration.",
+      "category": "productivity",
+      "tags": ["memory", "dream", "consolidation", "auto", "hooks"],
+      "homepage": "https://github.com/MeCKodo/claude-auto-dream"
+    }
+  ]
+}
