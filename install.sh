@@ -59,27 +59,19 @@ if [ -f "$SETTINGS" ]; then
       const fs = require('fs');
       const settings = JSON.parse(fs.readFileSync('$SETTINGS', 'utf8'));
       if (!settings.hooks) settings.hooks = {};
-      if (!settings.hooks.PostSessionEnd) settings.hooks.PostSessionEnd = [];
 
-      const existing = settings.hooks.PostSessionEnd.some(h =>
-        h.hooks && h.hooks.some(hk => hk.command && hk.command.includes('claude-auto-dream'))
-      );
-
-      if (!existing) {
-        settings.hooks.PostSessionEnd.push({
-          matcher: '',
-          hooks: [{
-            type: 'command',
-            command: '$TRIGGER_PATH',
-            timeout: 1,
-            async: true
-          }]
-        });
-        fs.writeFileSync('$SETTINGS', JSON.stringify(settings, null, 2) + '\n');
-        console.log('✓ Hook registered in settings.json (PostSessionEnd)');
-      } else {
-        console.log('✓ Hook already registered in settings.json');
-      }
+      // Always update to ensure correct format
+      settings.hooks.PostSessionEnd = [{
+        matcher: '',
+        hooks: [{
+          type: 'command',
+          command: '$TRIGGER_PATH',
+          timeout: 1,
+          async: true
+        }]
+      }];
+      fs.writeFileSync('$SETTINGS', JSON.stringify(settings, null, 2) + '\n');
+      console.log('✓ Hook registered in settings.json (PostSessionEnd)');
     "
 else
     echo "⚠️  No settings.json found at $SETTINGS"
