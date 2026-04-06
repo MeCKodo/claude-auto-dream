@@ -61,6 +61,7 @@ if [ -f "$SETTINGS" ]; then
       if (!settings.hooks) settings.hooks = {};
 
       settings.hooks.PostSessionEnd = [{
+        matcher: '',
         hooks: [{
           type: 'command',
           command: '$TRIGGER_PATH',
