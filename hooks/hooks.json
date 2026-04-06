@@ -1,7 +1,7 @@
 {
-  "description": "PostSessionEnd hook: triggers auto dream after each Claude Code session ends",
+  "description": "SessionEnd hook: triggers auto dream after each Claude Code session ends",
   "hooks": {
-    "PostSessionEnd": [
+    "SessionEnd": [
       {
         "hooks": [
           {
