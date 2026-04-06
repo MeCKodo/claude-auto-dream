@@ -1,13 +1,17 @@
-[
-  {
-    "matcher": "",
-    "hooks": [
+{
+  "description": "PostSessionEnd hook: triggers auto dream after each Claude Code session ends",
+  "hooks": {
+    "PostSessionEnd": [
       {
-        "type": "command",
-        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/trigger.sh",
-        "timeout": 1,
-        "async": true
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/trigger.sh",
+            "timeout": 1,
+            "async": true
+          }
+        ]
       }
     ]
   }
-]
+}

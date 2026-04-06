@@ -60,9 +60,7 @@ if [ -f "$SETTINGS" ]; then
       const settings = JSON.parse(fs.readFileSync('$SETTINGS', 'utf8'));
       if (!settings.hooks) settings.hooks = {};
 
-      // Always update to ensure correct format
       settings.hooks.PostSessionEnd = [{
-        matcher: '',
         hooks: [{
           type: 'command',
           command: '$TRIGGER_PATH',
