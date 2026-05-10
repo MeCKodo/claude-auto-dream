@@ -1,5 +1,5 @@
 {
-  "description": "SessionEnd hook: triggers auto dream after each Claude Code session ends",
+  "description": "Auto dream + extract: SessionEnd consolidates memory; Stop incrementally extracts after each assistant message.",
   "hooks": {
     "SessionEnd": [
       {
@@ -7,7 +7,17 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/trigger.sh",
-            "timeout": 1,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/trigger-extract.sh",
             "async": true
           }
         ]

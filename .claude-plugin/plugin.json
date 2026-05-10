@@ -1,6 +1,6 @@
 {
   "name": "claude-auto-dream",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Auto memory consolidation for Claude Code — replicates Anthropic's auto-dream using any API provider (Anthropic, OpenAI, DashScope, etc.)",
   "author": {
     "name": "bytedance"

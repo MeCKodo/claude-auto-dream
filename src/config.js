@@ -31,50 +31,6 @@ const PROVIDERS = {
   },
 };
 
-function loadConfig(argv) {
-  const config = { ...DEFAULTS };
-
-  // 1. Load JSON config
-  const configPaths = [
-    path.join(process.env.HOME, '.claude-auto-dream', 'config.json'),     // install.sh default
-    path.join(process.env.HOME, '.claude', 'plugins', 'cache', 'claude-auto-dream', 'config.json'), // plugin dir
-    path.join(process.env.HOME, '.claude-auto-dream.json'),               // flat file fallback
-  ];
-  for (const p of configPaths) {
-    if (fs.existsSync(p)) {
-      try {
-        const loaded = JSON.parse(fs.readFileSync(p, 'utf-8'));
-        Object.assign(config, loaded);
-        break;
-      } catch (e) { /* ignore parse errors */ }
-    }
-  }
-
-  // 2. Override with env vars
-  if (process.env.DREAM_PROVIDER) config.provider = process.env.DREAM_PROVIDER;
-  if (process.env.DREAM_ENDPOINT) config.endpoint = process.env.DREAM_ENDPOINT;
-  if (process.env.DREAM_MODEL) config.model = process.env.DREAM_MODEL;
-  if (process.env.DREAM_API_KEY) config.apiKey = process.env.DREAM_API_KEY;
-  if (process.env.DREAM_MIN_HOURS) config.gates.minHours = parseInt(process.env.DREAM_MIN_HOURS);
-  if (process.env.DREAM_MIN_SESSIONS) config.gates.minSessions = parseInt(process.env.DREAM_MIN_SESSIONS);
-
-  // 3. Override with CLI args
-  if (argv.endpoint) config.endpoint = argv.endpoint;
-  if (argv.model) config.model = argv.model;
-  if (argv.apiKey) config.apiKey = argv.apiKey;
-  if (argv.provider) config.provider = argv.provider;
-
-  // 4. Apply provider preset
-  const preset = PROVIDERS[config.provider] || PROVIDERS.openai;
-  if (!config.endpoint) config.endpoint = preset.endpoint;
-  if (!config.model) config.model = preset.model;
-  if (!config.authHeader) config.authHeader = preset.authHeader;
-  if (!config.authPrefix) config.authPrefix = preset.authPrefix;
-  if (config.format === 'auto') config.format = preset.format;
-
-  return config;
-}
-
 const DEFAULTS = {
   provider: 'openai',
   endpoint: null,
@@ -92,6 +48,77 @@ const DEFAULTS = {
     maxTokens: 65536,
     temperature: 0.3,
   },
+  extract: {
+    enabled: true,
+    everyTurns: 1,      // run on every Stop hook by default; >1 throttles
+    minProseWords: 3,   // skip extract when window has < N user-prose words
+    maxTurns: 5,        // sub-agent turn budget
+    maxTokens: 8192,
+  },
 };
+
+// Recursively merge `src` into `dst` (one level of nested objects is enough
+// for our schema). Avoids the gotcha where a partial user config like
+// `{ gates: { minHours: 0 } }` would wipe `gates.minSessions` from defaults.
+function deepMerge(dst, src) {
+  for (const k of Object.keys(src || {})) {
+    const sv = src[k];
+    if (sv && typeof sv === 'object' && !Array.isArray(sv) &&
+        dst[k] && typeof dst[k] === 'object' && !Array.isArray(dst[k])) {
+      deepMerge(dst[k], sv);
+    } else {
+      dst[k] = sv;
+    }
+  }
+  return dst;
+}
+
+function loadConfig(argv) {
+  // Clone defaults so the cached DEFAULTS object never mutates between calls.
+  const config = JSON.parse(JSON.stringify(DEFAULTS));
+
+  // 1. Load JSON config
+  const configPaths = [
+    path.join(process.env.HOME, '.claude-auto-dream', 'config.json'),     // install.sh default
+    path.join(process.env.HOME, '.claude', 'plugins', 'cache', 'claude-auto-dream', 'config.json'), // plugin dir
+    path.join(process.env.HOME, '.claude-auto-dream.json'),               // flat file fallback
+  ];
+  for (const p of configPaths) {
+    if (fs.existsSync(p)) {
+      try {
+        const loaded = JSON.parse(fs.readFileSync(p, 'utf-8'));
+        deepMerge(config, loaded);
+        break;
+      } catch (e) { /* ignore parse errors */ }
+    }
+  }
+
+  // 2. Override with env vars
+  if (process.env.DREAM_PROVIDER) config.provider = process.env.DREAM_PROVIDER;
+  if (process.env.DREAM_ENDPOINT) config.endpoint = process.env.DREAM_ENDPOINT;
+  if (process.env.DREAM_MODEL) config.model = process.env.DREAM_MODEL;
+  if (process.env.DREAM_API_KEY) config.apiKey = process.env.DREAM_API_KEY;
+  if (process.env.DREAM_MIN_HOURS) config.gates.minHours = parseInt(process.env.DREAM_MIN_HOURS);
+  if (process.env.DREAM_MIN_SESSIONS) config.gates.minSessions = parseInt(process.env.DREAM_MIN_SESSIONS);
+  if (process.env.DREAM_EXTRACT_ENABLED) config.extract.enabled = process.env.DREAM_EXTRACT_ENABLED !== 'false';
+  if (process.env.DREAM_EXTRACT_EVERY_TURNS) config.extract.everyTurns = parseInt(process.env.DREAM_EXTRACT_EVERY_TURNS);
+  if (process.env.DREAM_EXTRACT_MIN_PROSE) config.extract.minProseWords = parseInt(process.env.DREAM_EXTRACT_MIN_PROSE);
+
+  // 3. Override with CLI args
+  if (argv.endpoint) config.endpoint = argv.endpoint;
+  if (argv.model) config.model = argv.model;
+  if (argv.apiKey) config.apiKey = argv.apiKey;
+  if (argv.provider) config.provider = argv.provider;
+
+  // 4. Apply provider preset
+  const preset = PROVIDERS[config.provider] || PROVIDERS.openai;
+  if (!config.endpoint) config.endpoint = preset.endpoint;
+  if (!config.model) config.model = preset.model;
+  if (!config.authHeader) config.authHeader = preset.authHeader;
+  if (!config.authPrefix) config.authPrefix = preset.authPrefix;
+  if (config.format === 'auto') config.format = preset.format;
+
+  return config;
+}
 
 module.exports = { loadConfig, PROVIDERS, DEFAULTS };
