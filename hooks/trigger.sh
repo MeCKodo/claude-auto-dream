@@ -59,6 +59,43 @@ if [ -n "$PAYLOAD_CWD" ]; then
     fi
 fi
 
+# ---------- Config pre-check ----------
+CONFIG_FOUND=0
+for cfg in "$HOME/.claude-auto-dream/config.json" \
+           "$HOME/.claude/plugins/cache/claude-auto-dream/config.json" \
+           "$HOME/.claude-auto-dream.json"; do
+    [ -f "$cfg" ] && CONFIG_FOUND=1 && break
+done
+
+if [ "$CONFIG_FOUND" -eq 0 ]; then
+    cat >> "$LOG_DIR/trigger.log" <<'MISS'
+
+╔══════════════════════════════════════════════════════════════╗
+║  claude-auto-dream: config file not found — dream skipped   ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  Create ~/.claude-auto-dream/config.json with your API key:  ║
+║                                                              ║
+║  mkdir -p ~/.claude-auto-dream                               ║
+║  cat > ~/.claude-auto-dream/config.json << 'EOF'             ║
+║  {                                                           ║
+║    "provider": "openai",                                     ║
+║    "model": "gpt-4o",                                        ║
+║    "apiKey": "sk-YOUR_KEY_HERE",                             ║
+║    "gates": { "minHours": 24, "minSessions": 5 }            ║
+║  }                                                           ║
+║  EOF                                                         ║
+║                                                              ║
+║  Providers: anthropic | openai | openai_compat               ║
+║  For openai_compat, also set "endpoint": "https://..."       ║
+║                                                              ║
+║  Or run: bash <plugin_root>/install.sh                       ║
+╚══════════════════════════════════════════════════════════════╝
+MISS
+    [ -n "$PAYLOAD_TMP" ] && rm -f "$PAYLOAD_TMP"
+    exit 0
+fi
+
 if command -v node &>/dev/null && [ -f "$DREAM_SRC" ]; then
     if [ -n "$PAYLOAD_TMP" ]; then
         CLAUDE_HOOK_PAYLOAD_FILE="$PAYLOAD_TMP" \

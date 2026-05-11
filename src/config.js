@@ -118,6 +118,32 @@ function loadConfig(argv) {
   if (!config.authPrefix) config.authPrefix = preset.authPrefix;
   if (config.format === 'auto') config.format = preset.format;
 
+  // Validate: apiKey must be set and not the placeholder
+  if (!config.apiKey || config.apiKey === 'YOUR_API_KEY_HERE') {
+    const configPath = path.join(process.env.HOME, '.claude-auto-dream', 'config.json');
+    const msg = [
+      '',
+      '╔══════════════════════════════════════════════════════════════╗',
+      '║  claude-auto-dream: API key not configured                  ║',
+      '╠══════════════════════════════════════════════════════════════╣',
+      '║                                                              ║',
+      `║  Edit ${configPath}`,
+      '║  and set "apiKey" to your real API key.                      ║',
+      '║                                                              ║',
+      '║  Example (OpenAI):                                           ║',
+      '║    "apiKey": "sk-proj-abc123..."                             ║',
+      '║                                                              ║',
+      '║  Example (DashScope / openai_compat):                        ║',
+      '║    "provider": "openai_compat",                              ║',
+      '║    "endpoint": "https://dashscope.aliyuncs.com/...",         ║',
+      '║    "apiKey": "sk-abc123..."                                  ║',
+      '╚══════════════════════════════════════════════════════════════╝',
+      '',
+    ].join('\n');
+    console.error(msg);
+    process.exit(1);
+  }
+
   return config;
 }
 

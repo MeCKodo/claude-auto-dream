@@ -217,6 +217,15 @@ occurrences) — replace must always be a single, well-anchored swap.
 
 ## Changelog
 
+### 1.1.1
+
+- **Fix**: add config file pre-check in trigger scripts — if
+  `~/.claude-auto-dream/config.json` is missing, the hook now logs a
+  detailed setup guide instead of failing silently.
+- **Fix**: validate `apiKey` at load time in `src/config.js` — placeholder
+  or empty keys are caught early with a clear error message and
+  `process.exit(1)`.
+
 ### 1.1.0
 
 - **New**: `extractMemories` companion that mirrors Claude Code 2.1.x. Runs on
